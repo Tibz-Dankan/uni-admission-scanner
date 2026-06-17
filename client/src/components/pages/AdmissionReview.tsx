@@ -384,7 +384,7 @@ export default function AdmissionReview() {
     onSubmit: (values) => updateMutation.mutate(values),
   });
 
-  if (isLoading || !admission || !initialValues) {
+  if (isLoading || !admission || !initialValues || !formik.values.student) {
     return <p className="mx-auto max-w-4xl py-10 text-sm text-muted-foreground">Loading...</p>;
   }
 
