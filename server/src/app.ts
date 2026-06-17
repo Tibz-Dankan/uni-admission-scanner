@@ -5,6 +5,7 @@ import morgan from "morgan";
 import rateLimit from "express-rate-limit";
 import errorController from "./controllers/errorController";
 import statusRoutes from "./routes/statusRoutes";
+import admissionRoutes from "./routes/admissionRoutes";
 
 const app = express();
 
@@ -25,6 +26,7 @@ const limiter = rateLimit({
 app.use(limiter);
 
 app.use("/api/v1/status", statusRoutes);
+app.use("/api/v1/admissions", admissionRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ status: "fail", message: "Route not found" });

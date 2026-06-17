@@ -1,7 +1,194 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
 }
+
+enum Sex {
+  MALE
+  FEMALE
+}
+
+enum MaritalStatus {
+  SINGLE
+  MARRIED
+}
+
+enum SponsorType {
+  GOVERNMENT
+  PRIVATE
+}
+
+enum LivingStatus {
+  LIVING
+  DECEASED
+}
+
+enum GuardianRelation {
+  FATHER
+  MOTHER
+  NEXT_OF_KIN
+}
+
+enum ExaminationType {
+  UCE
+  UACE
+}
+
+enum OtherQualificationType {
+  EQUIVALENT
+  OTHER
+}
+
+enum AdmissionStatus {
+  PENDING_REVIEW
+  COMPLETED
+  REJECTED
+}
+
+model Student {
+  id                      String         @id @default(cuid())
+  firstName               String?
+  middleName              String?
+  lastName                String?
+  studentNo               String?
+  regNo                   String?        @unique
+  yearOfStudy             String?
+  sex                     Sex?
+  dateOfBirth             DateTime?
+  nationality             String?
+  nin                     String?
+  maritalStatus           MaritalStatus?
+  telephone               String?
+  email                   String?
+  physicalAddress         String?
+  districtOfOrigin        String?
+  village                 String?
+  sponsorType             SponsorType?
+  sponsorName             String?
+  sponsorTelephone        String?
+  sponsorEmail            String?
+  sponsorAddress          String?
+  chronicMedicalCondition String?
+  disability              String?
+  requiredAdjustments     String?
+  createdAt               DateTime       @default(now())
+  updatedAt               DateTime       @updatedAt
+  admissions              Admission[]
+
+  @@map("students")
+}
+
+model Admission {
+  id                    String               @id @default(cuid())
+  studentId             String
+  student               Student              @relation(fields: [studentId], references: [id])
+  semester              String?
+  academicYear          String?
+  programmeName         String?
+  programmeDuration     String?
+  status                AdmissionStatus      @default(PENDING_REVIEW)
+  studentSigned         Boolean?
+  studentSignedDate     DateTime?
+  registrarName         String?
+  registrarSigned       Boolean?
+  registrarVerifiedDate DateTime?
+  officialStampPresent  Boolean?
+  pageCount             Int?
+  rawExtraction         Json?
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+  guardians             Guardian[]
+  examinationRecords    ExaminationRecord[]
+  otherQualifications   OtherQualification[]
+  registeredCourses     RegisteredCourse[]
+
+  @@index([studentId])
+  @@map("admissions")
+}
+
+model Guardian {
+  id              String           @id @default(cuid())
+  admissionId     String
+  admission       Admission        @relation(fields: [admissionId], references: [id], onDelete: Cascade)
+  relation        GuardianRelation
+  firstName       String?
+  middleName      String?
+  lastName        String?
+  telephone       String?
+  email           String?
+  physicalAddress String?
+  occupation      String?
+  livingStatus    LivingStatus?
+
+  @@index([admissionId])
+  @@map("guardians")
+}
+
+model ExaminationRecord {
+  id                String               @id @default(cuid())
+  admissionId       String
+  admission         Admission            @relation(fields: [admissionId], references: [id], onDelete: Cascade)
+  type              ExaminationType
+  yearOfExamination String?
+  indexNumber       String?
+  subjects          ExaminationSubject[]
+
+  @@index([admissionId])
+  @@map("examination_records")
+}
+
+model ExaminationSubject {
+  id                  String            @id @default(cuid())
+  examinationRecordId String
+  examinationRecord   ExaminationRecord @relation(fields: [examinationRecordId], references: [id], onDelete: Cascade)
+  position            Int?
+  subject             String?
+  grade               String?
+
+  @@index([examinationRecordId])
+  @@map("examination_subjects")
+}
+
+model OtherQualification {
+  id                    String                 @id @default(cuid())
+  admissionId           String
+  admission             Admission              @relation(fields: [admissionId], references: [id], onDelete: Cascade)
+  type                  OtherQualificationType
+  yearFrom              String?
+  yearTo                String?
+  institutionName       String?
+  qualificationAttained String?
+  classOfAward          String?
+
+  @@index([admissionId])
+  @@map("other_qualifications")
+}
+
+model RegisteredCourse {
+  id          String    @id @default(cuid())
+  admissionId String
+  admission   Admission @relation(fields: [admissionId], references: [id], onDelete: Cascade)
+  position    Int?
+  code        String?
+  courseName  String?
+
+  @@index([admissionId])
+  @@map("registered_courses")
+}
+
+// Prisma commands
+
+// npx prisma generate  // Generates the Prisma client
+// npx prisma migrate dev --name init  // Creates a new migration
+// npx prisma migrate status  // Shows the status of migrations
+// npx prisma migrate deploy  // Deploys the migrations to the database
+// npx prisma db push  // Pushes the schema to the database
+// npx prisma db pull  // Pulls the schema from the database
+// npx prisma format  // Formats the schema
