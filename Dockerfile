@@ -6,11 +6,11 @@ WORKDIR /app
 
 RUN npm install -g pnpm
 
-COPY package.json package-lock.json ./
+COPY server/package.json server/package-lock.json ./
 
 RUN pnpm install
 
-COPY . .
+COPY server/ .
 
 # RUN pnpm exec prisma migrate deploy
 RUN pnpm exec prisma generate
