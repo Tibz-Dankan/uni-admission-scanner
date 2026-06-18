@@ -16,13 +16,16 @@ echo "Deploying new image: $NEW_IMAGE"
 mkdir -p ~/app
 cd ~/app
 
-# Copy .env file from the root directory to app directory
+# Create uni-doc-scanner directory in app directory
+mkdir -p ~/app/uni-doc-scanner
+
+# Copy .env file from the root directory to app/uni-doc-scanner directory
 if [ -f ~/uni-doc-scanner.env ]; then
-    echo "Copying .env file from home directory to app directory..."
-    cp ~/uni-doc-scanner.env ./uni-doc-scanner/.env
+    echo "Copying .env file from home directory to app/uni-doc-scanner directory..."
+    cp ~/uni-doc-scanner.env ~/app/uni-doc-scanner/.env
 elif [ -f ../uni-doc-scanner.env ]; then
     echo "Using existing .env file in parent directory..."
-    cp ../uni-doc-scanner.env ./uni-doc-scanner/.env
+    cp ../uni-doc-scanner.env ~/app/uni-doc-scanner/.env
 else
     echo "ERROR: No .env file found in ~ or ~/app/ !"
     echo "Please create an .env file with your application's environment variables"
