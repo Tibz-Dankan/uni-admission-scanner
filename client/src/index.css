@@ -12,9 +12,9 @@
   --card-foreground: oklch(0.205 0.03 250);
 
   /* Soroti University brand tokens (approximated from sun.ac.ug, see frontend SKILL.md) */
-  --primary: oklch(0.32 0.06 150); /* deep forest green */
+  --primary: oklch(0.57 0.14 248); /* royal blue #1A7BC4 */
   --primary-foreground: oklch(0.98 0 0);
-  --secondary: oklch(0.93 0.02 30); /* blush nav background */
+  --secondary: oklch(0.95 0.01 250); /* blue-tinted nav background */
   --secondary-foreground: oklch(0.25 0.03 250);
   --accent: oklch(0.5 0.19 25); /* crimson red, e.g. "Apply Now" CTAs */
   --accent-foreground: oklch(0.98 0 0);
@@ -38,9 +38,9 @@
   --card: oklch(0.22 0.02 250);
   --card-foreground: oklch(0.96 0 0);
 
-  --primary: oklch(0.55 0.08 150);
+  --primary: oklch(0.68 0.13 248);
   --primary-foreground: oklch(0.15 0 0);
-  --secondary: oklch(0.3 0.02 30);
+  --secondary: oklch(0.28 0.02 250);
   --secondary-foreground: oklch(0.95 0 0);
   --accent: oklch(0.58 0.2 25);
   --accent-foreground: oklch(0.98 0 0);
