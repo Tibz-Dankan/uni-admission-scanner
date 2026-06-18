@@ -13,16 +13,16 @@ RUN pnpm install
 COPY server/ .
 
 # RUN pnpm exec prisma migrate deploy
-RUN pnpm exec prisma generate
+# RUN pnpm exec prisma generate
 
 ARG PORT=8080
 
-EXPOSE $PORT
+EXPOSE 8080
 
 ENV NODE_ENV=production
 
-ENV PORT=$PORT
+ENV PORT=8080
 
-CMD ["sh", "-c", "pnpm exec prisma migrate deploy && pnpm start"]
+CMD ["sh", "-c", "pnpm exec prisma generate && pnpm exec prisma migrate deploy && pnpm start"]
 # CMD ["sh", "-c", "pnpm start"]
 # Note: Prisma Migrate is commented out to prevent accidental schema changes in prod.
