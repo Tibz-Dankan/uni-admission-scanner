@@ -33,15 +33,6 @@
     "socket.io": "^4.8.3",
     "zod": "^4.4.3"
   },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@firebase/util",
-      "@google/genai",
-      "@prisma/engines",
-      "prisma",
-      "protobufjs"
-    ]
-  },
   "devDependencies": {
     "@types/bcryptjs": "^3.0.0",
     "@types/cors": "^2.8.19",
