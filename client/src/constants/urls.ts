@@ -1,4 +1,9 @@
-export const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080/api/v1";
+let API_BASE_URL: string;
 
-// unidocscanner.judiciaryhrm.com
+if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
+  API_BASE_URL = "http://localhost:8081/api/v1";
+} else {
+  API_BASE_URL = "https://unidocscanner.judiciaryhrm.com/api/v1";
+}
+
+export { API_BASE_URL };
