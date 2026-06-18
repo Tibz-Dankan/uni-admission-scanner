@@ -6,7 +6,7 @@ WORKDIR /app
 
 RUN npm install -g pnpm
 
-COPY server/package.json server/package-lock.json ./
+COPY server/package.json server/pnpm-lock.yaml ./
 
 RUN pnpm install
 
