@@ -1,0 +1,6 @@
+allowBuilds:
+  "@firebase/util": true
+  "@google/genai": true
+  "@prisma/engines": true
+  prisma: true
+  protobufjs: true
