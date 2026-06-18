@@ -80,16 +80,16 @@ check_service() {
     return 1
   fi
   
-  echo "  Checking port 8080..."
-  if ! timeout 5 bash -c "</dev/tcp/localhost/8080" &>/dev/null; then
-    echo "  Port 8080 not accessible"
+  echo "  Checking port 8081..."
+  if ! timeout 5 bash -c "</dev/tcp/localhost/8081" &>/dev/null; then
+    echo "  Port 8081 not accessible"
     return 1
   fi
 
-  echo "  Port 8080 is accessible"
+  echo "  Port 8081 is accessible"
   
   # echo "  Checking health endpoint..."
-  # if ! curl -s -f -o /dev/null http://localhost:8080/api/v1/status; then
+  # if ! curl -s -f -o /dev/null http://localhost:8081/api/v1/status; then
   #   echo "  Health endpoint not responding"
   #   return 1
   # fi
@@ -106,7 +106,7 @@ while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
   echo "Checking if backend service is running (attempt $ATTEMPT/$MAX_ATTEMPTS)..."
   
   if check_service; then
-    echo "Backend service is now running and available on port 8080!"
+    echo "Backend service is now running and available on port 8081!"
     break
   fi
   
