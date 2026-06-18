@@ -34,18 +34,18 @@ fi
 
 UNI_DOC_SCANNER_BACKEND_SUBDOMAIN="unidocscanner.judiciaryhrm.com"
 
-# Copy docker-compose.yaml file from the root directory to app directory
-if [ -f ~/docker-compose.yaml ]; then
-    echo "Copying docker-compose.yaml from home directory to app directory..."
-    cp ~/docker-compose.yaml ./
-elif [ -f ../docker-compose.yaml ]; then
-    echo "Using existing docker-compose.yaml file in parent directory..."
-    cp ../docker-compose.yaml ./
-else
-    echo "ERROR: No docker-compose.yaml file found in ~ or ~/app/ !"
-    echo "Please create an docker-compose.yaml file with deployment configuration"
-    exit 1
-fi
+# # Copy docker-compose.yaml file from the root directory to app directory
+# if [ -f ~/docker-compose.yaml ]; then
+#     echo "Copying docker-compose.yaml from home directory to app directory..."
+#     cp ~/docker-compose.yaml ./
+# elif [ -f ../docker-compose.yaml ]; then
+#     echo "Using existing docker-compose.yaml file in parent directory..."
+#     cp ../docker-compose.yaml ./
+# else
+#     echo "ERROR: No docker-compose.yaml file found in ~ or ~/app/ !"
+#     echo "Please create an docker-compose.yaml file with deployment configuration"
+#     exit 1
+# fi
 
 # Initialize Docker Swarm if not already initialized
 if ! docker info | grep -q "Swarm: active"; then
