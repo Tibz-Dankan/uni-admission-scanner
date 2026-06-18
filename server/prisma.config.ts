@@ -13,8 +13,8 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
-    // url: process.env["DATABASE_URL"],
-    url: isProduction ? process.env.UN_ADMISSION_DB_PROD_URL : process.env.UN_ADMISSION_DB_DEV_URL,
+    url: isProduction
+      ? process.env.UN_ADMISSION_DB_PROD_URL
+      : process.env.UN_ADMISSION_DB_DEV_URL,
   },
 });
-
