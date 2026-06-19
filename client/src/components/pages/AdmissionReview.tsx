@@ -700,19 +700,24 @@ export default function AdmissionReview() {
       </Card>
 
       <div className="flex flex-wrap justify-end gap-2 pb-10">
-        <Button type="button" variant="destructive" onClick={() => rejectMutation.mutate()} disabled={rejectMutation.isPending}>
-          Reject
+        <Button
+          type="button"
+          variant="destructive"
+          onClick={() => rejectMutation.mutate()}
+          loading={rejectMutation.isPending}
+        >
+          {rejectMutation.isPending ? "Rejecting..." : "Reject"}
         </Button>
-        <Button type="submit" variant="outline" disabled={updateMutation.isPending}>
+        <Button type="submit" variant="outline" loading={updateMutation.isPending}>
           {updateMutation.isPending ? "Saving..." : "Save changes"}
         </Button>
         <Button
           type="button"
           variant="accent"
           onClick={() => confirmMutation.mutate()}
-          disabled={confirmMutation.isPending}
+          loading={confirmMutation.isPending}
         >
-          Confirm
+          {confirmMutation.isPending ? "Confirming..." : "Confirm"}
         </Button>
       </div>
     </form>
