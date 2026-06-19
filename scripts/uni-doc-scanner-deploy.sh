@@ -100,7 +100,7 @@ check_service() {
 # Keep checking until service is running or timeout (200 seconds = 4 minutes)
 MAX_ATTEMPTS=40
 ATTEMPT=1
-WAIT_TIME=5  # seconds between attempts
+WAIT_TIME=20  # seconds between attempts
 
 while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
   echo "Checking if backend service is running (attempt $ATTEMPT/$MAX_ATTEMPTS)..."
