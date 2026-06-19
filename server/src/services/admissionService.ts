@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import type { AdmissionStatus, Prisma } from "@prisma/client";
+import type { AdmissionStatus, Prisma } from "../generated/prisma/client";
 import prisma from "../utils/prisma";
 import { sseHub } from "../utils/sseHub";
 import { limitPdfPages } from "../utils/pdf";

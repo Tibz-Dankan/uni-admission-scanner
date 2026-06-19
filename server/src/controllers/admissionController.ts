@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import type { AdmissionStatus } from "@prisma/client";
+import type { AdmissionStatus } from "../generated/prisma/client";
 import * as admissionService from "../services/admissionService";
 import { sseHub } from "../utils/sseHub";
 import { AppError } from "../utils/error";
