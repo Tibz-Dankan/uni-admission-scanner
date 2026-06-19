@@ -16,6 +16,7 @@ import type {
   GuardianRelation,
   OtherQualificationType,
 } from "@/types/admission";
+import { AppDate } from "@/utils/date";
 
 const ns = (v: string | null | undefined) => v ?? "";
 const sn = (v: string) => (v.trim() === "" ? null : v);
@@ -161,10 +162,10 @@ function buildInitialValues(admission: Admission): ReviewFormValues {
     programmeName: ns(admission.programmeName),
     programmeDuration: ns(admission.programmeDuration),
     studentSigned: Boolean(admission.studentSigned),
-    studentSignedDate: ns(admission.studentSignedDate),
+    studentSignedDate: AppDate.toInputDate(admission.studentSignedDate),
     registrarName: ns(admission.registrarName),
     registrarSigned: Boolean(admission.registrarSigned),
-    registrarVerifiedDate: ns(admission.registrarVerifiedDate),
+    registrarVerifiedDate: AppDate.toInputDate(admission.registrarVerifiedDate),
     officialStampPresent: Boolean(admission.officialStampPresent),
     student: {
       firstName: ns(student.firstName),
@@ -174,7 +175,7 @@ function buildInitialValues(admission: Admission): ReviewFormValues {
       regNo: ns(student.regNo),
       yearOfStudy: ns(student.yearOfStudy),
       sex: ns(student.sex),
-      dateOfBirth: ns(student.dateOfBirth),
+      dateOfBirth: AppDate.toInputDate(student.dateOfBirth),
       nationality: ns(student.nationality),
       nin: ns(student.nin),
       maritalStatus: ns(student.maritalStatus),

@@ -7,6 +7,7 @@ import { Button } from "@/ui/shared/button";
 import { Card, CardContent } from "@/ui/shared/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/shared/table";
 import type { AdmissionStatus } from "@/types/admission";
+import { AppDate } from "@/utils/date";
 
 const statusVariant: Record<AdmissionStatus, "secondary" | "success" | "destructive"> = {
   PENDING_REVIEW: "secondary",
@@ -68,7 +69,7 @@ export default function AdmissionDetail() {
               <Field label="Reg No" value={student.regNo} />
               <Field label="Year of Study" value={student.yearOfStudy} />
               <Field label="Sex" value={student.sex} />
-              <Field label="Date of Birth" value={student.dateOfBirth} />
+              <Field label="Date of Birth" value={AppDate.toHuman(student.dateOfBirth)} />
               <Field label="Nationality" value={student.nationality} />
               <Field label="NIN" value={student.nin} />
               <Field label="Marital Status" value={student.maritalStatus} />
@@ -156,9 +157,9 @@ export default function AdmissionDetail() {
           <Section title="Declaration & Verification">
             <dl className="grid grid-cols-2 gap-4 sm:grid-cols-3">
               <Field label="Student Signed" value={admission.studentSigned ? "Yes" : "No"} />
-              <Field label="Signed Date" value={admission.studentSignedDate} />
+              <Field label="Signed Date" value={AppDate.toHuman(admission.studentSignedDate)} />
               <Field label="Registrar" value={admission.registrarName} />
-              <Field label="Verified Date" value={admission.registrarVerifiedDate} />
+              <Field label="Verified Date" value={AppDate.toHuman(admission.registrarVerifiedDate)} />
               <Field label="Official Stamp Present" value={admission.officialStampPresent ? "Yes" : "No"} />
             </dl>
           </Section>

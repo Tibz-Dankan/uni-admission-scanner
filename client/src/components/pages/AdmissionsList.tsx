@@ -6,6 +6,7 @@ import { Button } from "@/ui/shared/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shared/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/shared/table";
 import type { AdmissionStatus } from "@/types/admission";
+import { AppDate } from "@/utils/date";
 
 const statusVariant: Record<AdmissionStatus, "secondary" | "success" | "destructive"> = {
   PENDING_REVIEW: "secondary",
@@ -77,7 +78,7 @@ export default function AdmissionsList() {
                         {statusLabel[admission.status]}
                       </Badge>
                     </TableCell>
-                    <TableCell>{new Date(admission.createdAt).toLocaleDateString()}</TableCell>
+                    <TableCell>{AppDate.toHumanDateTime(admission.createdAt)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
