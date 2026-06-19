@@ -12,6 +12,8 @@ RUN pnpm install
 
 COPY server/ .
 
+RUN pnpm build
+
 # RUN pnpm exec prisma migrate deploy
 # RUN pnpm exec prisma generate
 
