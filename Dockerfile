@@ -28,5 +28,5 @@ ENV PORT=8081
 # CMD ["sh", "-c", "pnpm exec prisma generate && pnpm exec prisma migrate deploy && pnpm start"]
 # CMD ["sh", "-c", "pnpm exec prisma generate && pnpm start"]
 # CMD ["sh", "-c", "pnpm start"]
-CMD ["sh", "-c", "pnpm dev"]
+CMD ["sh", "-c", "pnpm exec prisma generate && pnpm dev"]
 # Note: Prisma Migrate is commented out to prevent accidental schema changes in prod.
