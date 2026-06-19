@@ -11,7 +11,10 @@ const app = express();
 
 app.use(
   cors({
-    origin: process.env.NODE_ENV === "production" ? false : "*",
+    origin:
+      process.env.NODE_ENV === "production"
+        ? "https://soroto-uni-scanner.netlify.app"
+        : "*",
   }),
 );
 
