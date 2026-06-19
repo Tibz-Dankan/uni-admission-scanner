@@ -110,7 +110,8 @@ export default function UploadAdmission() {
                 <Button
                   variant="accent"
                   onClick={handleSubmit}
-                  disabled={!file || uploadMutation.isPending}
+                  loading={uploadMutation.isPending}
+                  disabled={!file}
                 >
                   {uploadMutation.isPending ? "Uploading..." : "Upload & Extract"}
                 </Button>
