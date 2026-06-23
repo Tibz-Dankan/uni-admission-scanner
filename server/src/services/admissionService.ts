@@ -201,12 +201,26 @@ export interface ListAdmissionsParams {
   status?: AdmissionStatus;
   page?: number;
   pageSize?: number;
+  search?: string;
 }
 
 export async function listAdmissions(params: ListAdmissionsParams) {
   const page = params.page && params.page > 0 ? params.page : 1;
   const pageSize = params.pageSize && params.pageSize > 0 ? Math.min(params.pageSize, 100) : 20;
-  const where: Prisma.AdmissionWhereInput = params.status ? { status: params.status } : {};
+  const where: Prisma.AdmissionWhereInput = {};
+  if (params.status) where.status = params.status;
+  if (params.search) {
+    const s = params.search.trim();
+    where.student = {
+      OR: [
+        { firstName:  { contains: s, mode: "insensitive" } },
+        { middleName: { contains: s, mode: "insensitive" } },
+        { lastName:   { contains: s, mode: "insensitive" } },
+        { studentNo:  { contains: s, mode: "insensitive" } },
+        { regNo:      { contains: s, mode: "insensitive" } },
+      ],
+    };
+  }
 
   const [items, total] = await Promise.all([
     prisma.admission.findMany({

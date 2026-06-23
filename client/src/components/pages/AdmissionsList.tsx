@@ -1,9 +1,11 @@
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { listAdmissions } from "@/api/admissions";
 import { Badge } from "@/ui/shared/badge";
 import { Button } from "@/ui/shared/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shared/card";
+import { Input } from "@/ui/shared/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/shared/table";
 import type { AdmissionStatus } from "@/types/admission";
 import { AppDate } from "@/utils/date";
@@ -25,9 +27,17 @@ function studentName(student: { firstName: string | null; middleName: string | n
 }
 
 export default function AdmissionsList() {
+  const [inputValue, setInputValue] = useState("");
+  const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    const t = setTimeout(() => setSearch(inputValue.trim()), 300);
+    return () => clearTimeout(t);
+  }, [inputValue]);
+
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["admissions"],
-    queryFn: () => listAdmissions({ pageSize: 50 }),
+    queryKey: ["admissions", { search }],
+    queryFn: () => listAdmissions({ pageSize: 50, search: search || undefined }),
   });
 
   return (
@@ -40,6 +50,12 @@ export default function AdmissionsList() {
           </Button>
         </CardHeader>
         <CardContent>
+          <Input
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            placeholder="Search by name, student no or reg no…"
+            className="mb-4 max-w-sm"
+          />
           {isLoading && <p className="text-sm text-muted-foreground">Loading...</p>}
           {isError && <p className="text-sm text-destructive">Failed to load admissions.</p>}
           {data && data.items.length === 0 && (

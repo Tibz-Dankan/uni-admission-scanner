@@ -22,12 +22,13 @@ export async function uploadAdmission(file: File): Promise<{ jobId: string }> {
 }
 
 export async function listAdmissions(
-  params: { status?: AdmissionStatus; page?: number; pageSize?: number } = {}
+  params: { status?: AdmissionStatus; page?: number; pageSize?: number; search?: string } = {}
 ): Promise<AdmissionListResult> {
   const query = new URLSearchParams();
   if (params.status) query.set("status", params.status);
   if (params.page) query.set("page", String(params.page));
   if (params.pageSize) query.set("pageSize", String(params.pageSize));
+  if (params.search) query.set("search", params.search);
   const qs = query.toString();
   const res = await apiFetch<ApiEnvelope<AdmissionListResult>>(`/admissions${qs ? `?${qs}` : ""}`);
   return res.data;

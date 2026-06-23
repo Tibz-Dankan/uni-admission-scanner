@@ -82,6 +82,10 @@ model Student {
   updatedAt               DateTime       @updatedAt
   admissions              Admission[]
 
+  @@index([firstName])
+  @@index([middleName])
+  @@index([lastName])
+  @@index([studentNo])
   @@map("students")
 }
 

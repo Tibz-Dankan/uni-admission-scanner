@@ -46,11 +46,12 @@ export function streamAdmissionEvents(req: Request<{ jobId: string }>, res: Resp
 }
 
 export async function listAdmissions(req: Request, res: Response): Promise<void> {
-  const { status, page, pageSize } = req.query;
+  const { status, page, pageSize, search } = req.query;
   const result = await admissionService.listAdmissions({
     status: typeof status === "string" ? (status as AdmissionStatus) : undefined,
     page: page ? Number(page) : undefined,
     pageSize: pageSize ? Number(pageSize) : undefined,
+    search: typeof search === "string" ? search : undefined,
   });
   res.status(200).json({ status: "success", data: result });
 }
