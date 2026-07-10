@@ -6,6 +6,7 @@ import rateLimit from "express-rate-limit";
 import errorController from "./controllers/errorController";
 import statusRoutes from "./routes/statusRoutes";
 import admissionRoutes from "./routes/admissionRoutes";
+import authRoutes from "./routes/authRoutes";
 
 const app = express();
 
@@ -29,6 +30,7 @@ const limiter = rateLimit({
 app.use(limiter);
 
 app.use("/api/v1/status", statusRoutes);
+app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/admissions", admissionRoutes);
 
 app.use((req, res) => {

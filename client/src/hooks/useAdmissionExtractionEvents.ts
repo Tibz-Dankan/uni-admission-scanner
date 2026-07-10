@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+import { EventSourcePolyfill } from "event-source-polyfill";
 import { API_BASE_URL } from "@/constants/urls";
+import { useAuthStore } from "@/stores/authStore";
 import type { Admission, AdmissionSseEvent } from "@/types/admission";
 
 export type ExtractionStage = "connecting" | "streaming" | "review_ready" | "failed";
@@ -14,9 +16,10 @@ interface UseAdmissionExtractionEventsResult {
 /**
  * Adapted from Tibz-Dankan/appcrons-web's useGetAppLiveRequest hook: opens an
  * EventSource, parses each message as JSON, and ignores "heartbeat"/"warmup"
- * messages since they're just keep-alive, not state updates. Uses the native
- * EventSource (no auth header needed here) - see frontend SKILL.md for when
- * to switch to EventSourcePolyfill instead.
+ * messages since they're just keep-alive, not state updates. Uses
+ * EventSourcePolyfill instead of the native EventSource since this endpoint
+ * is now behind bearer-token auth, and native EventSource cannot send custom
+ * headers.
  */
 export function useAdmissionExtractionEvents(jobId: string | null): UseAdmissionExtractionEventsResult {
   const [stage, setStage] = useState<ExtractionStage>("connecting");
@@ -32,7 +35,10 @@ export function useAdmissionExtractionEvents(jobId: string | null): UseAdmission
     setResult(null);
     setError(null);
 
-    const eventSource = new EventSource(`${API_BASE_URL}/admissions/extract/${jobId}/events`);
+    const token = useAuthStore.getState().auth?.token;
+    const eventSource = new EventSourcePolyfill(`${API_BASE_URL}/admissions/extract/${jobId}/events`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
 
     eventSource.onmessage = (event) => {
       const parsed = JSON.parse(event.data) as AdmissionSseEvent;

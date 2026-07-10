@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { asyncHandler } from "../utils/asyncHandler";
 import { uploadPdf } from "../middleware/upload";
+import { requireAuth } from "../middleware/auth";
 import {
   confirmAdmission,
   deleteAdmission,
@@ -14,14 +15,14 @@ import {
 
 const router = Router();
 
-router.post("/upload", uploadPdf, asyncHandler(uploadAdmission));
-router.get("/extract/:jobId/events", streamAdmissionEvents);
+router.post("/upload", requireAuth, uploadPdf, asyncHandler(uploadAdmission));
+router.get("/extract/:jobId/events", requireAuth, streamAdmissionEvents);
 
-router.get("/", asyncHandler(listAdmissions));
-router.get("/:id", asyncHandler(getAdmission));
-router.patch("/:id", asyncHandler(updateAdmission));
-router.post("/:id/confirm", asyncHandler(confirmAdmission));
-router.post("/:id/reject", asyncHandler(rejectAdmission));
-router.delete("/:id", asyncHandler(deleteAdmission));
+router.get("/", requireAuth, asyncHandler(listAdmissions));
+router.get("/:id", requireAuth, asyncHandler(getAdmission));
+router.patch("/:id", requireAuth, asyncHandler(updateAdmission));
+router.post("/:id/confirm", requireAuth, asyncHandler(confirmAdmission));
+router.post("/:id/reject", requireAuth, asyncHandler(rejectAdmission));
+router.delete("/:id", requireAuth, asyncHandler(deleteAdmission));
 
 export default router;
