@@ -16,4 +16,4 @@ RUN pnpm build
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "pnpm prisma migrate deploy && node dist/app.js"]
+CMD ["sh", "-c", "pnpm prisma migrate deploy && pnpm prisma generate && node dist/app.js"]
