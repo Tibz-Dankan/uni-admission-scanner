@@ -1,0 +1,13 @@
+import type { ReactNode } from "react";
+import { Navigate } from "react-router-dom";
+import { useAuthStore } from "@/stores/authStore";
+
+export default function ProtectedRoute({ children }: { children: ReactNode }) {
+  const token = useAuthStore((state) => state.auth?.token);
+
+  if (!token) {
+    return <Navigate to="/signin" replace />;
+  }
+
+  return children;
+}
