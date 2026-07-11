@@ -63,6 +63,7 @@ jobs:
       - name: Copy deploy script and docker compose file using SSH
         run: |
           scp -o StrictHostKeyChecking=no -o IdentitiesOnly=no scripts/uni-doc-scanner-deploy.sh ${{ secrets.DO_USERNAME }}@${{ secrets.DO_HOST }}:~
+        # scp -o StrictHostKeyChecking=no -o IdentitiesOnly=no scripts/entrypoint.sh ${{ secrets.DO_USERNAME }}@${{ secrets.DO_HOST }}:~/app/entrypoint.sh
         # scp -o StrictHostKeyChecking=no -o IdentitiesOnly=no scripts/prisma-migrate.sh ${{ secrets.DO_USERNAME }}@${{ secrets.DO_HOST }}:~
 
       - name: Deploy to DigitalOcean using SSHun-doc-scanner-deploy
