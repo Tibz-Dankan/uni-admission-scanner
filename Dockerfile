@@ -1,3 +1,38 @@
+# FROM node:24-alpine
+
+# RUN apk add --no-cache openssl libc6-compat curl ca-certificates
+
+# WORKDIR /app
+
+# RUN npm install -g pnpm
+
+# COPY server/package.json server/pnpm-lock.yaml server/pnpm-workspace.yaml server/.npmrc ./
+
+# RUN pnpm install
+
+# COPY server/ .
+
+# # RUN pnpm build
+
+# # RUN pnpm exec prisma migrate deploy
+# # RUN pnpm exec prisma generate
+
+# ARG PORT=8081
+
+# EXPOSE 8081
+
+# ENV NODE_ENV=production
+
+# ENV PORT=8081
+
+# # CMD ["sh", "-c", "pnpm exec prisma generate && pnpm exec prisma migrate deploy && pnpm start"]
+# # CMD ["sh", "-c", "pnpm exec prisma generate && pnpm start"]
+# # CMD ["sh", "-c", "pnpm start"]
+# CMD ["sh", "-c", "pnpm exec prisma generate && pnpm dev"]
+# # Note: Prisma Migrate is commented out to prevent accidental schema changes in prod.
+
+
+# ---- NEW VERSION ----
 FROM node:24-alpine
 
 RUN apk add --no-cache openssl libc6-compat curl ca-certificates
@@ -6,27 +41,25 @@ WORKDIR /app
 
 RUN npm install -g pnpm
 
+# COPY package.json pnpm-lock.yaml ./
+# RUN pnpm install --frozen-lockfile
+
+# COPY . .
 COPY server/package.json server/pnpm-lock.yaml server/pnpm-workspace.yaml server/.npmrc ./
 
 RUN pnpm install
 
 COPY server/ .
 
+
+# RUN pnpm prisma:generate
 # RUN pnpm build
 
-# RUN pnpm exec prisma migrate deploy
-# RUN pnpm exec prisma generate
+COPY scripts/entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
 
-ARG PORT=8081
+ ARG PORT=8081
 
 EXPOSE 8081
 
-ENV NODE_ENV=production
-
-ENV PORT=8081
-
-# CMD ["sh", "-c", "pnpm exec prisma generate && pnpm exec prisma migrate deploy && pnpm start"]
-# CMD ["sh", "-c", "pnpm exec prisma generate && pnpm start"]
-# CMD ["sh", "-c", "pnpm start"]
-CMD ["sh", "-c", "pnpm exec prisma generate && pnpm dev"]
-# Note: Prisma Migrate is commented out to prevent accidental schema changes in prod.
+ENTRYPOINT ["/app/entrypoint.sh"]
