@@ -31,7 +31,7 @@ export default function SignIn() {
     mutationFn: signIn,
     onSuccess: (auth) => {
       setAuth(auth);
-      navigate("/", { replace: true });
+      navigate("/admissions", { replace: true });
     },
     onError: (err: Error) => toast.error(err.message),
   });
