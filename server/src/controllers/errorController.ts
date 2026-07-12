@@ -10,6 +10,11 @@ export default function errorController(
   const statusCode = err instanceof AppError ? err.statusCode : 500;
   const status = err instanceof AppError ? err.status : "error";
 
+  console.error(err);
+  if ((err as { cause?: unknown }).cause) {
+    console.error("Caused by:", (err as { cause?: unknown }).cause);
+  }
+
   res.status(statusCode).json({
     status,
     message: err.message || "Something went wrong",
