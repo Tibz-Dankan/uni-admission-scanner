@@ -53,7 +53,7 @@ COPY server/ .
 
 
 # RUN pnpm prisma:generate
-# RUN pnpm build
+RUN pnpm build
 
 COPY scripts/entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
