@@ -62,4 +62,6 @@ RUN chmod +x /app/entrypoint.sh
 
 EXPOSE 8081
 
+ENV NODE_ENV=production
+
 ENTRYPOINT ["/app/entrypoint.sh"]
