@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { UserRole } from "../generated/prisma/client";
+import type { UserRole } from "../db/schema";
 
 export const signupSchema = z.object({
   firstName: z.string().min(1),

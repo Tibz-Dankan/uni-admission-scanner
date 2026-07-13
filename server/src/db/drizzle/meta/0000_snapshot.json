@@ -1,0 +1,1005 @@
+{
+  "id": "c2e1ad4f-ba62-404e-a764-0a66a67082f3",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.admissions": {
+      "name": "admissions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "studentId": {
+          "name": "studentId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "semester": {
+          "name": "semester",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "academicYear": {
+          "name": "academicYear",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "programmeName": {
+          "name": "programmeName",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "programmeDuration": {
+          "name": "programmeDuration",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "AdmissionStatus",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'PENDING_REVIEW'"
+        },
+        "studentSigned": {
+          "name": "studentSigned",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "studentSignedDate": {
+          "name": "studentSignedDate",
+          "type": "timestamp (3)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "registrarName": {
+          "name": "registrarName",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "registrarSigned": {
+          "name": "registrarSigned",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "registrarVerifiedDate": {
+          "name": "registrarVerifiedDate",
+          "type": "timestamp (3)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "officialStampPresent": {
+          "name": "officialStampPresent",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pageCount": {
+          "name": "pageCount",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "rawExtraction": {
+          "name": "rawExtraction",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp (3)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "CURRENT_TIMESTAMP"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp (3)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "admissions_studentId_idx": {
+          "name": "admissions_studentId_idx",
+          "columns": [
+            {
+              "expression": "studentId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "admissions_studentId_fkey": {
+          "name": "admissions_studentId_fkey",
+          "tableFrom": "admissions",
+          "tableTo": "students",
+          "columnsFrom": [
+            "studentId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.examination_records": {
+      "name": "examination_records",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "admissionId": {
+          "name": "admissionId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "ExaminationType",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "yearOfExamination": {
+          "name": "yearOfExamination",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "indexNumber": {
+          "name": "indexNumber",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "examination_records_admissionId_idx": {
+          "name": "examination_records_admissionId_idx",
+          "columns": [
+            {
+              "expression": "admissionId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "examination_records_admissionId_fkey": {
+          "name": "examination_records_admissionId_fkey",
+          "tableFrom": "examination_records",
+          "tableTo": "admissions",
+          "columnsFrom": [
+            "admissionId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.examination_subjects": {
+      "name": "examination_subjects",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "examinationRecordId": {
+          "name": "examinationRecordId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "position": {
+          "name": "position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "subject": {
+          "name": "subject",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "grade": {
+          "name": "grade",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "examination_subjects_examinationRecordId_idx": {
+          "name": "examination_subjects_examinationRecordId_idx",
+          "columns": [
+            {
+              "expression": "examinationRecordId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "examination_subjects_examinationRecordId_fkey": {
+          "name": "examination_subjects_examinationRecordId_fkey",
+          "tableFrom": "examination_subjects",
+          "tableTo": "examination_records",
+          "columnsFrom": [
+            "examinationRecordId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.guardians": {
+      "name": "guardians",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "admissionId": {
+          "name": "admissionId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "relation": {
+          "name": "relation",
+          "type": "GuardianRelation",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "firstName": {
+          "name": "firstName",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "middleName": {
+          "name": "middleName",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "lastName": {
+          "name": "lastName",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "telephone": {
+          "name": "telephone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "physicalAddress": {
+          "name": "physicalAddress",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "occupation": {
+          "name": "occupation",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "livingStatus": {
+          "name": "livingStatus",
+          "type": "LivingStatus",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "guardians_admissionId_idx": {
+          "name": "guardians_admissionId_idx",
+          "columns": [
+            {
+              "expression": "admissionId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "guardians_admissionId_fkey": {
+          "name": "guardians_admissionId_fkey",
+          "tableFrom": "guardians",
+          "tableTo": "admissions",
+          "columnsFrom": [
+            "admissionId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.other_qualifications": {
+      "name": "other_qualifications",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "admissionId": {
+          "name": "admissionId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "OtherQualificationType",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "yearFrom": {
+          "name": "yearFrom",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "yearTo": {
+          "name": "yearTo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "institutionName": {
+          "name": "institutionName",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "qualificationAttained": {
+          "name": "qualificationAttained",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "classOfAward": {
+          "name": "classOfAward",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "other_qualifications_admissionId_idx": {
+          "name": "other_qualifications_admissionId_idx",
+          "columns": [
+            {
+              "expression": "admissionId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "other_qualifications_admissionId_fkey": {
+          "name": "other_qualifications_admissionId_fkey",
+          "tableFrom": "other_qualifications",
+          "tableTo": "admissions",
+          "columnsFrom": [
+            "admissionId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.registered_courses": {
+      "name": "registered_courses",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "admissionId": {
+          "name": "admissionId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "position": {
+          "name": "position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "code": {
+          "name": "code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "courseName": {
+          "name": "courseName",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "registered_courses_admissionId_idx": {
+          "name": "registered_courses_admissionId_idx",
+          "columns": [
+            {
+              "expression": "admissionId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "registered_courses_admissionId_fkey": {
+          "name": "registered_courses_admissionId_fkey",
+          "tableFrom": "registered_courses",
+          "tableTo": "admissions",
+          "columnsFrom": [
+            "admissionId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.students": {
+      "name": "students",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "firstName": {
+          "name": "firstName",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "middleName": {
+          "name": "middleName",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "lastName": {
+          "name": "lastName",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "studentNo": {
+          "name": "studentNo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "regNo": {
+          "name": "regNo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "yearOfStudy": {
+          "name": "yearOfStudy",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sex": {
+          "name": "sex",
+          "type": "Sex",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dateOfBirth": {
+          "name": "dateOfBirth",
+          "type": "timestamp (3)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "nationality": {
+          "name": "nationality",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "nin": {
+          "name": "nin",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "maritalStatus": {
+          "name": "maritalStatus",
+          "type": "MaritalStatus",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "telephone": {
+          "name": "telephone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "physicalAddress": {
+          "name": "physicalAddress",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "districtOfOrigin": {
+          "name": "districtOfOrigin",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "village": {
+          "name": "village",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sponsorType": {
+          "name": "sponsorType",
+          "type": "SponsorType",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sponsorName": {
+          "name": "sponsorName",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sponsorTelephone": {
+          "name": "sponsorTelephone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sponsorEmail": {
+          "name": "sponsorEmail",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sponsorAddress": {
+          "name": "sponsorAddress",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "chronicMedicalCondition": {
+          "name": "chronicMedicalCondition",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "disability": {
+          "name": "disability",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "requiredAdjustments": {
+          "name": "requiredAdjustments",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp (3)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "CURRENT_TIMESTAMP"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp (3)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "students_firstName_idx": {
+          "name": "students_firstName_idx",
+          "columns": [
+            {
+              "expression": "firstName",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "students_middleName_idx": {
+          "name": "students_middleName_idx",
+          "columns": [
+            {
+              "expression": "middleName",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "students_lastName_idx": {
+          "name": "students_lastName_idx",
+          "columns": [
+            {
+              "expression": "lastName",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "students_studentNo_idx": {
+          "name": "students_studentNo_idx",
+          "columns": [
+            {
+              "expression": "studentNo",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "students_regNo_key": {
+          "name": "students_regNo_key",
+          "columns": [
+            {
+              "expression": "regNo",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.users": {
+      "name": "users",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "firstName": {
+          "name": "firstName",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "middleName": {
+          "name": "middleName",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "lastName": {
+          "name": "lastName",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "password": {
+          "name": "password",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "role": {
+          "name": "role",
+          "type": "UserRole",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp (3)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "CURRENT_TIMESTAMP"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp (3)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "users_email_key": {
+          "name": "users_email_key",
+          "columns": [
+            {
+              "expression": "email",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.AdmissionStatus": {
+      "name": "AdmissionStatus",
+      "schema": "public",
+      "values": [
+        "PENDING_REVIEW",
+        "COMPLETED",
+        "REJECTED"
+      ]
+    },
+    "public.ExaminationType": {
+      "name": "ExaminationType",
+      "schema": "public",
+      "values": [
+        "UCE",
+        "UACE"
+      ]
+    },
+    "public.GuardianRelation": {
+      "name": "GuardianRelation",
+      "schema": "public",
+      "values": [
+        "FATHER",
+        "MOTHER",
+        "NEXT_OF_KIN"
+      ]
+    },
+    "public.LivingStatus": {
+      "name": "LivingStatus",
+      "schema": "public",
+      "values": [
+        "LIVING",
+        "DECEASED"
+      ]
+    },
+    "public.MaritalStatus": {
+      "name": "MaritalStatus",
+      "schema": "public",
+      "values": [
+        "SINGLE",
+        "MARRIED"
+      ]
+    },
+    "public.OtherQualificationType": {
+      "name": "OtherQualificationType",
+      "schema": "public",
+      "values": [
+        "EQUIVALENT",
+        "OTHER"
+      ]
+    },
+    "public.Sex": {
+      "name": "Sex",
+      "schema": "public",
+      "values": [
+        "MALE",
+        "FEMALE"
+      ]
+    },
+    "public.SponsorType": {
+      "name": "SponsorType",
+      "schema": "public",
+      "values": [
+        "GOVERNMENT",
+        "PRIVATE"
+      ]
+    },
+    "public.UserRole": {
+      "name": "UserRole",
+      "schema": "public",
+      "values": [
+        "RECORDS_OFFICER",
+        "ACADEMIC_REGISTRAR"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

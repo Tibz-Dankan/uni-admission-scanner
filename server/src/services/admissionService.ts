@@ -1,6 +1,16 @@
 import crypto from "crypto";
-import type { AdmissionStatus, Prisma } from "../generated/prisma/client";
-import prisma from "../utils/prisma";
+import { and, count, eq, ilike, inArray, or } from "drizzle-orm";
+import { db } from "../db";
+import {
+  admissions,
+  examinationRecords,
+  examinationSubjects,
+  guardians,
+  otherQualifications,
+  registeredCourses,
+  students,
+  type AdmissionStatus,
+} from "../db/schema";
 import { sseHub } from "../utils/sseHub";
 import { limitPdfPages } from "../utils/pdf";
 import { extractAdmissionData, GeminiExtractionError } from "../utils/gemini";
@@ -11,18 +21,13 @@ import type {
   ExtractedGuardian,
   ExtractedOtherQualification,
   ExtractedRegisteredCourse,
+  ExtractedSubject,
   UpdateAdmissionInput,
 } from "../types/admission";
 
 const ADMISSION_MAX_PAGES = Number(process.env.ADMISSION_MAX_PAGES) || 4;
 
-const admissionInclude = {
-  student: true,
-  guardians: true,
-  examinationRecords: { include: { subjects: { orderBy: { position: "asc" } } } },
-  otherQualifications: true,
-  registeredCourses: { orderBy: { position: "asc" } },
-} satisfies Prisma.AdmissionInclude;
+type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
 function toDate(value: string | null | undefined): Date | null {
   if (!value) return null;
@@ -119,22 +124,39 @@ function mapRegisteredCourse(c: ExtractedRegisteredCourse) {
   };
 }
 
-function mapExaminationRecordCreate(record: ExtractedExaminationRecord) {
+function mapExaminationSubject(s: ExtractedSubject) {
   return {
-    type: record.type,
-    yearOfExamination: record.yearOfExamination ?? null,
-    indexNumber: record.indexNumber ?? null,
-    subjects: {
-      create: record.subjects.map((s) => ({
-        position: s.position ?? null,
-        subject: s.subject ?? null,
-        grade: s.grade ?? null,
-      })),
-    },
+    position: s.position ?? null,
+    subject: s.subject ?? null,
+    grade: s.grade ?? null,
   };
 }
 
-async function upsertStudent(tx: Prisma.TransactionClient, student: ExtractedAdmissionData["student"]) {
+async function insertExaminationRecords(
+  tx: Transaction,
+  admissionId: string,
+  records: ExtractedExaminationRecord[]
+): Promise<void> {
+  for (const record of records) {
+    const [inserted] = await tx
+      .insert(examinationRecords)
+      .values({
+        admissionId,
+        type: record.type,
+        yearOfExamination: record.yearOfExamination ?? null,
+        indexNumber: record.indexNumber ?? null,
+      })
+      .returning();
+
+    if (record.subjects.length > 0) {
+      await tx.insert(examinationSubjects).values(
+        record.subjects.map((s) => ({ examinationRecordId: inserted.id, ...mapExaminationSubject(s) }))
+      );
+    }
+  }
+}
+
+async function upsertStudent(tx: Transaction, student: ExtractedAdmissionData["student"]) {
   const data = {
     firstName: student.firstName ?? null,
     middleName: student.middleName ?? null,
@@ -160,20 +182,29 @@ async function upsertStudent(tx: Prisma.TransactionClient, student: ExtractedAdm
     chronicMedicalCondition: student.chronicMedicalCondition ?? null,
     disability: student.disability ?? null,
     requiredAdjustments: student.requiredAdjustments ?? null,
+    updatedAt: new Date(),
   };
 
   if (student.regNo) {
-    return tx.student.upsert({ where: { regNo: student.regNo }, create: data, update: data });
+    const [row] = await tx
+      .insert(students)
+      .values(data)
+      .onConflictDoUpdate({ target: students.regNo, set: data })
+      .returning();
+    return row;
   }
-  return tx.student.create({ data });
+
+  const [row] = await tx.insert(students).values(data).returning();
+  return row;
 }
 
 async function saveExtractedAdmission(extracted: ExtractedAdmissionData, pageCount: number) {
-  return prisma.$transaction(async (tx) => {
+  const admissionId = await db.transaction(async (tx) => {
     const student = await upsertStudent(tx, extracted.student);
 
-    return tx.admission.create({
-      data: {
+    const [admission] = await tx
+      .insert(admissions)
+      .values({
         studentId: student.id,
         semester: extracted.semester ?? null,
         academicYear: extracted.academicYear ?? null,
@@ -186,15 +217,32 @@ async function saveExtractedAdmission(extracted: ExtractedAdmissionData, pageCou
         registrarVerifiedDate: toDate(extracted.registrarVerifiedDate),
         officialStampPresent: extracted.officialStampPresent ?? null,
         pageCount,
-        rawExtraction: extracted as unknown as Prisma.InputJsonValue,
-        guardians: { create: extracted.guardians.map(mapGuardian) },
-        examinationRecords: { create: extracted.examinationRecords.map(mapExaminationRecordCreate) },
-        otherQualifications: { create: extracted.otherQualifications.map(mapOtherQualification) },
-        registeredCourses: { create: extracted.registeredCourses.map(mapRegisteredCourse) },
-      },
-      include: admissionInclude,
-    });
+        rawExtraction: extracted,
+        updatedAt: new Date(),
+      })
+      .returning();
+
+    if (extracted.guardians.length > 0) {
+      await tx
+        .insert(guardians)
+        .values(extracted.guardians.map((g) => ({ admissionId: admission.id, ...mapGuardian(g) })));
+    }
+    if (extracted.otherQualifications.length > 0) {
+      await tx
+        .insert(otherQualifications)
+        .values(extracted.otherQualifications.map((q) => ({ admissionId: admission.id, ...mapOtherQualification(q) })));
+    }
+    if (extracted.registeredCourses.length > 0) {
+      await tx
+        .insert(registeredCourses)
+        .values(extracted.registeredCourses.map((c) => ({ admissionId: admission.id, ...mapRegisteredCourse(c) })));
+    }
+    await insertExaminationRecords(tx, admission.id, extracted.examinationRecords);
+
+    return admission.id;
   });
+
+  return getAdmission(admissionId);
 }
 
 export interface ListAdmissionsParams {
@@ -207,96 +255,116 @@ export interface ListAdmissionsParams {
 export async function listAdmissions(params: ListAdmissionsParams) {
   const page = params.page && params.page > 0 ? params.page : 1;
   const pageSize = params.pageSize && params.pageSize > 0 ? Math.min(params.pageSize, 100) : 20;
-  const where: Prisma.AdmissionWhereInput = {};
-  if (params.status) where.status = params.status;
+
+  const conditions = [];
+  if (params.status) conditions.push(eq(admissions.status, params.status));
+
   if (params.search) {
-    const s = params.search.trim();
-    where.student = {
-      OR: [
-        { firstName:  { contains: s, mode: "insensitive" } },
-        { middleName: { contains: s, mode: "insensitive" } },
-        { lastName:   { contains: s, mode: "insensitive" } },
-        { studentNo:  { contains: s, mode: "insensitive" } },
-        { regNo:      { contains: s, mode: "insensitive" } },
-      ],
-    };
+    const s = `%${params.search.trim()}%`;
+    const matchingStudents = await db
+      .select({ id: students.id })
+      .from(students)
+      .where(
+        or(
+          ilike(students.firstName, s),
+          ilike(students.middleName, s),
+          ilike(students.lastName, s),
+          ilike(students.studentNo, s),
+          ilike(students.regNo, s)
+        )
+      );
+    const studentIds = matchingStudents.map((row) => row.id);
+    if (studentIds.length === 0) {
+      return { items: [], total: 0, page, pageSize };
+    }
+    conditions.push(inArray(admissions.studentId, studentIds));
   }
 
-  const [items, total] = await Promise.all([
-    prisma.admission.findMany({
+  const where = conditions.length > 0 ? and(...conditions) : undefined;
+
+  const [items, totalResult] = await Promise.all([
+    db.query.admissions.findMany({
       where,
-      include: { student: true },
-      orderBy: { createdAt: "desc" },
-      skip: (page - 1) * pageSize,
-      take: pageSize,
+      with: { student: true },
+      orderBy: (fields, { desc }) => [desc(fields.createdAt)],
+      limit: pageSize,
+      offset: (page - 1) * pageSize,
     }),
-    prisma.admission.count({ where }),
+    db.select({ count: count() }).from(admissions).where(where),
   ]);
 
-  return { items, total, page, pageSize };
+  return { items, total: Number(totalResult[0]?.count ?? 0), page, pageSize };
 }
 
 export async function getAdmission(id: string) {
-  const admission = await prisma.admission.findUnique({ where: { id }, include: admissionInclude });
+  const admission = await db.query.admissions.findFirst({
+    where: eq(admissions.id, id),
+    with: {
+      student: true,
+      guardians: true,
+      examinationRecords: {
+        with: {
+          subjects: { orderBy: (fields, { asc }) => [asc(fields.position)] },
+        },
+      },
+      otherQualifications: true,
+      registeredCourses: { orderBy: (fields, { asc }) => [asc(fields.position)] },
+    },
+  });
   if (!admission) throw new AppError("Admission not found", 404);
   return admission;
 }
 
 export async function updateAdmission(id: string, input: UpdateAdmissionInput) {
-  const existing = await prisma.admission.findUnique({ where: { id } });
+  const existing = await db.query.admissions.findFirst({ where: eq(admissions.id, id) });
   if (!existing) throw new AppError("Admission not found", 404);
 
-  await prisma.$transaction(async (tx) => {
+  await db.transaction(async (tx) => {
     if (input.student) {
       const { dateOfBirth, ...rest } = input.student;
-      await tx.student.update({
-        where: { id: existing.studentId },
-        data: {
+      await tx
+        .update(students)
+        .set({
           ...rest,
           ...(dateOfBirth !== undefined && { dateOfBirth: toDate(dateOfBirth) }),
-        },
-      });
+          updatedAt: new Date(),
+        })
+        .where(eq(students.id, existing.studentId));
     }
 
     if (input.guardians) {
-      await tx.guardian.deleteMany({ where: { admissionId: id } });
+      await tx.delete(guardians).where(eq(guardians.admissionId, id));
       if (input.guardians.length > 0) {
-        await tx.guardian.createMany({
-          data: input.guardians.map((g) => ({ admissionId: id, ...mapGuardian(g) })),
-        });
+        await tx.insert(guardians).values(input.guardians.map((g) => ({ admissionId: id, ...mapGuardian(g) })));
       }
     }
 
     if (input.examinationRecords) {
-      await tx.examinationRecord.deleteMany({ where: { admissionId: id } });
-      for (const record of input.examinationRecords) {
-        await tx.examinationRecord.create({
-          data: { admissionId: id, ...mapExaminationRecordCreate(record) },
-        });
-      }
+      await tx.delete(examinationRecords).where(eq(examinationRecords.admissionId, id));
+      await insertExaminationRecords(tx, id, input.examinationRecords);
     }
 
     if (input.otherQualifications) {
-      await tx.otherQualification.deleteMany({ where: { admissionId: id } });
+      await tx.delete(otherQualifications).where(eq(otherQualifications.admissionId, id));
       if (input.otherQualifications.length > 0) {
-        await tx.otherQualification.createMany({
-          data: input.otherQualifications.map((q) => ({ admissionId: id, ...mapOtherQualification(q) })),
-        });
+        await tx
+          .insert(otherQualifications)
+          .values(input.otherQualifications.map((q) => ({ admissionId: id, ...mapOtherQualification(q) })));
       }
     }
 
     if (input.registeredCourses) {
-      await tx.registeredCourse.deleteMany({ where: { admissionId: id } });
+      await tx.delete(registeredCourses).where(eq(registeredCourses.admissionId, id));
       if (input.registeredCourses.length > 0) {
-        await tx.registeredCourse.createMany({
-          data: input.registeredCourses.map((c) => ({ admissionId: id, ...mapRegisteredCourse(c) })),
-        });
+        await tx
+          .insert(registeredCourses)
+          .values(input.registeredCourses.map((c) => ({ admissionId: id, ...mapRegisteredCourse(c) })));
       }
     }
 
-    await tx.admission.update({
-      where: { id },
-      data: {
+    await tx
+      .update(admissions)
+      .set({
         semester: input.semester,
         academicYear: input.academicYear,
         programmeName: input.programmeName,
@@ -309,20 +377,22 @@ export async function updateAdmission(id: string, input: UpdateAdmissionInput) {
         registrarVerifiedDate:
           input.registrarVerifiedDate !== undefined ? toDate(input.registrarVerifiedDate) : undefined,
         officialStampPresent: input.officialStampPresent,
-      },
-    });
+        updatedAt: new Date(),
+      })
+      .where(eq(admissions.id, id));
   });
 
   return getAdmission(id);
 }
 
 async function transitionStatus(id: string, from: AdmissionStatus, to: AdmissionStatus) {
-  const existing = await prisma.admission.findUnique({ where: { id } });
+  const existing = await db.query.admissions.findFirst({ where: eq(admissions.id, id) });
   if (!existing) throw new AppError("Admission not found", 404);
   if (existing.status !== from) {
     throw new AppError(`Cannot move an admission from ${existing.status} to ${to}`, 400);
   }
-  return prisma.admission.update({ where: { id }, data: { status: to }, include: admissionInclude });
+  await db.update(admissions).set({ status: to, updatedAt: new Date() }).where(eq(admissions.id, id));
+  return getAdmission(id);
 }
 
 export function confirmAdmission(id: string) {
@@ -334,7 +404,7 @@ export function rejectAdmission(id: string) {
 }
 
 export async function deleteAdmission(id: string): Promise<void> {
-  const existing = await prisma.admission.findUnique({ where: { id } });
+  const existing = await db.query.admissions.findFirst({ where: eq(admissions.id, id) });
   if (!existing) throw new AppError("Admission not found", 404);
-  await prisma.admission.delete({ where: { id } });
+  await db.delete(admissions).where(eq(admissions.id, id));
 }

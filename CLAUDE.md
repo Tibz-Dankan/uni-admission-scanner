@@ -4,7 +4,7 @@ Lets a registrar upload a scan of Soroti University's handwritten "REGISTRATION 
 
 ## Tech stack
 
-- `server/` — Express 5, TypeScript, Prisma 7 (`@prisma/adapter-pg`, PostgreSQL), multer (uploads), `@google/genai` (Gemini), `pdf-lib` (PDF page handling), `zod` (validation).
+- `server/` — Express 5, TypeScript, Drizzle ORM (`drizzle-orm/postgres-js`, PostgreSQL), multer (uploads), `@google/genai` (Gemini), `pdf-lib` (PDF page handling), `zod` (validation).
 - `client/` — React 19, Vite, TypeScript, TanStack Query, Formik/Yup, react-router-dom, Tailwind v4 + shadcn-style primitives (Radix + `cva` + `cn()`).
 
 Package manager is `pnpm` in both workspaces.
@@ -12,7 +12,7 @@ Package manager is `pnpm` in both workspaces.
 ## Running locally
 
 ```
-cd server && pnpm install && pnpm prisma migrate dev && pnpm dev   # http://localhost:8080
+cd server && pnpm install && pnpm db:migrate && pnpm dev          # http://localhost:8080
 cd client && pnpm install && pnpm dev                              # http://localhost:5173
 ```
 
@@ -24,8 +24,9 @@ Required server env vars (see `server/.env.example`): `DATABASE_URL`, `GEMINI_AP
 server/src/
   routes/        Express routers (thin)
   controllers/   req/res glue, no business logic
-  services/      orchestration + Prisma writes (admissionService.ts)
-  utils/         gemini.ts (AI), pdf.ts, sseHub.ts, prisma.ts, asyncHandler.ts, error.ts
+  services/      orchestration + Drizzle writes (admissionService.ts)
+  db/            schema.ts (tables/enums/relations), index.ts (db client), connection.ts (health check), drizzle/ (migrations)
+  utils/         gemini.ts (AI), pdf.ts, sseHub.ts, asyncHandler.ts, error.ts
   middleware/    upload.ts (multer)
   types/         shared TS types
 

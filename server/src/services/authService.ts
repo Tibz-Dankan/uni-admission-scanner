@@ -1,9 +1,10 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import prisma from "../utils/prisma";
+import { eq } from "drizzle-orm";
+import { db } from "../db";
+import { users, type User } from "../db/schema";
 import { AppError } from "../utils/error";
 import type { SigninInput, SignupInput } from "../types/auth";
-import type { User } from "../generated/prisma/client";
 
 const SALT_ROUNDS = 10;
 
@@ -31,28 +32,31 @@ function toSafeUser(user: User) {
 }
 
 export async function signup(input: SignupInput) {
-  const existing = await prisma.user.findUnique({ where: { email: input.email } });
+  const existing = await db.query.users.findFirst({ where: eq(users.email, input.email) });
   if (existing) {
     throw new AppError("Email is already registered", 409);
   }
 
   const password = await bcrypt.hash(input.password, SALT_ROUNDS);
-  const user = await prisma.user.create({
-    data: {
+  const now = new Date();
+  const [user] = await db
+    .insert(users)
+    .values({
       firstName: input.firstName,
       middleName: input.middleName,
       lastName: input.lastName,
       email: input.email,
       password,
       role: input.role,
-    },
-  });
+      updatedAt: now,
+    })
+    .returning();
 
   return { token: signToken(user), user: toSafeUser(user) };
 }
 
 export async function signin(input: SigninInput) {
-  const user = await prisma.user.findUnique({ where: { email: input.email } });
+  const user = await db.query.users.findFirst({ where: eq(users.email, input.email) });
   if (!user) {
     throw new AppError("Invalid email or password", 400);
   }

@@ -7,6 +7,7 @@ import errorController from "./controllers/errorController";
 import statusRoutes from "./routes/statusRoutes";
 import admissionRoutes from "./routes/admissionRoutes";
 import authRoutes from "./routes/authRoutes";
+import { checkDatabaseConnection } from "./db/connection";
 
 const app = express();
 
@@ -41,6 +42,19 @@ app.use(errorController);
 
 const PORT = process.env.PORT || 8081;
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+async function startServer() {
+  const isDbConnected = await checkDatabaseConnection();
+  if (!isDbConnected) {
+    console.error("Failed to connect to database. Server not started.");
+    process.exit(1);
+  }
+
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+startServer().catch((err) => {
+  console.error("Failed to start server:", err);
+  process.exit(1);
 });
