@@ -1,6 +1,6 @@
 ---
 name: backend-development
-description: Use when working in server/ on this Express + Prisma + TypeScript API — covers the layered route/controller/service/util structure, error handling conventions, the Gemini extraction utility, and the SSE progress-hub pattern.
+description: Use when working in server/ on this Express + Drizzle + TypeScript API — covers the layered route/controller/service/util structure, error handling conventions, the Gemini extraction utility, and the SSE progress-hub pattern.
 ---
 
 # Backend development — uni-admission-scanner server
@@ -10,17 +10,17 @@ description: Use when working in server/ on this Express + Prisma + TypeScript A
 Requests flow `routes/ → controllers/ → services/ → utils/`. Keep each layer thin and single-purpose:
 
 - **routes/** (`server/src/routes/*.ts`) — just wires paths to controller functions and middleware. No logic.
-- **controllers/** (`server/src/controllers/*.ts`) — req/res glue only: pull params/body, call a service function, shape the HTTP response. No Prisma calls, no business rules here.
-- **services/** (`server/src/services/*.ts`) — orchestration and all Prisma reads/writes. This is where transactions, upserts, and multi-step workflows live.
+- **controllers/** (`server/src/controllers/*.ts`) — req/res glue only: pull params/body, call a service function, shape the HTTP response. No Drizzle calls, no business rules here.
+- **services/** (`server/src/services/*.ts`) — orchestration and all Drizzle reads/writes. This is where transactions, upserts, and multi-step workflows live.
 - **utils/** (`server/src/utils/*.ts`) — pure, reusable helpers with no knowledge of HTTP. The Gemini client lives here (see below) precisely because it's a capability, not a request handler.
 
 Every async controller is wrapped in `asyncHandler` (`server/src/utils/asyncHandler.ts`) so rejected promises reach `errorController` (`server/src/controllers/errorController.ts`) instead of crashing the process. Throw `AppError(message, statusCode)` (`server/src/utils/error.ts`) for any expected/operational failure (bad input, not found, etc.) — `errorController` already knows how to turn that into the right JSON response. Don't hand-roll `try/catch` + `res.status().json()` in controllers; let errors bubble to `asyncHandler`.
 
-## Prisma
+## Drizzle
 
-`server/src/utils/prisma.ts` exports a single shared `PrismaClient` instance built with `@prisma/adapter-pg` — always import that, never instantiate a second `PrismaClient`. Multi-step writes that must succeed or fail together (e.g. creating a `Student` + `Admission` + its child rows) go inside one `prisma.$transaction(...)`.
+`server/src/db/index.ts` exports a single shared `db` instance built with `drizzle-orm/postgres-js` — always import that, never instantiate a second client. `server/src/db/schema.ts` holds every table, `pgEnum`, `relations()` block, and `$inferSelect`/`$inferInsert` type export; it mirrors the tables/enums/indexes/FKs already living in Postgres, so treat renames there as schema changes, not refactors. Multi-step writes that must succeed or fail together (e.g. creating a `Student` + `Admission` + its child rows) go inside one `db.transaction(async (tx) => ...)`. Drizzle has no nested-create sugar — writing a parent + children is a sequence of explicit `tx.insert(...)` calls, not one call with a nested `create`. There's also no DB-level `updatedAt` default (matching the old Prisma `@updatedAt`, which was client-managed, not trigger-managed) — every insert and update must set `updatedAt: new Date()` explicitly.
 
-When adding a model, update `server/prisma/schema.prisma` and run `pnpm prisma migrate dev --name <change>` — never hand-edit the generated client or skip a migration.
+When adding a table/column, update `server/src/db/schema.ts` and run `pnpm db:generate --name <change>` to create a migration in `server/src/db/drizzle/`, then `pnpm db:migrate` to apply it locally — never hand-edit a generated migration file or skip one. `server/prisma/` is kept around only as a historical reference for the schema this was migrated from; it is not used by the running app.
 
 ## SSE progress hub pattern
 
@@ -51,7 +51,7 @@ If you need Gemini for a different extraction task, add a new exported function 
 1. Add/extend the orchestration function in `admissionService.ts`.
 2. Add a thin controller function in `admissionController.ts` calling it.
 3. Wire the route in `admissionRoutes.ts`.
-4. If the endpoint changes persisted shape, update `schema.prisma` + migrate, and update `server/src/types/admission.ts`.
+4. If the endpoint changes persisted shape, update `server/src/db/schema.ts` + migrate (see Drizzle section above), and update `server/src/types/admission.ts`.
 
 ## Uploads
 
