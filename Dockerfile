@@ -39,7 +39,7 @@ RUN apk add --no-cache openssl libc6-compat curl ca-certificates
 
 WORKDIR /app
 
-RUN npm install -g pnpm
+RUN npm install -g pnpm@11.12.0
 
 # COPY package.json pnpm-lock.yaml ./
 # RUN pnpm install --frozen-lockfile

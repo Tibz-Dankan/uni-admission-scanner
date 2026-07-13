@@ -4,3 +4,7 @@ allowBuilds:
   "@prisma/engines": true
   prisma: true
   protobufjs: true
+
+minimumReleaseAge: 1440
+minimumReleaseAgeExclude:
+  - tsx
