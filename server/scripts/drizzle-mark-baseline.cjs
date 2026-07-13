@@ -14,7 +14,8 @@
  * This script touches ONLY that bookkeeping table — no application tables/data.
  *
  * Usage:
- *   DATABASE_URL="postgresql://...neon-connection-string..." node scripts/drizzle-mark-baseline.cjs
+ *   node scripts/drizzle-mark-baseline.cjs                 # uses UN_ADMISSION_DB_DEV_URL
+ *   NODE_ENV=production node scripts/drizzle-mark-baseline.cjs   # uses UN_ADMISSION_DB_PROD_URL
  *
  * Safe to re-run: it checks for an existing row with the same hash first and does
  * nothing if already marked.
@@ -37,8 +38,15 @@ async function main() {
   const fileContents = fs.readFileSync(sqlFilePath, "utf8");
   const hash = crypto.createHash("sha256").update(fileContents).digest("hex");
 
-  const databaseUrl = process.env.DATABASE_URL;
-  if (!databaseUrl) throw new Error("DATABASE_URL is not set");
+  const isProduction = process.env.NODE_ENV === "production";
+  const databaseUrl = isProduction
+    ? process.env.UN_ADMISSION_DB_PROD_URL
+    : process.env.UN_ADMISSION_DB_DEV_URL;
+  if (!databaseUrl) {
+    throw new Error(
+      isProduction ? "UN_ADMISSION_DB_PROD_URL is not set" : "UN_ADMISSION_DB_DEV_URL is not set"
+    );
+  }
 
   console.log(`Baselining migration "${entry.tag}" (hash ${hash.slice(0, 12)}...) against:`);
   console.log(`  ${databaseUrl.replace(/:\/\/[^@]+@/, "://<redacted>@")}`);
