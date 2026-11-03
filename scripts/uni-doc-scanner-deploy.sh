@@ -64,8 +64,8 @@ else
   docker stack deploy -c docker-compose.yaml app-stack --with-registry-auth
 fi
 
-# Wait for backend service to be running and available on port 5000
-echo "Waiting for backend service to start and be available on port 5000..."
+# Wait for backend service to be running and healthy behind Traefik
+echo "Waiting for backend service to start and answer https://$UNI_DOC_SCANNER_BACKEND_SUBDOMAIN/api/v1/status..."
 
 check_service() {
   echo "  Checking service existence..."
@@ -80,20 +80,16 @@ check_service() {
     return 1
   fi
   
-  echo "  Checking port 8081..."
-  if ! timeout 5 bash -c "</dev/tcp/localhost/8081" &>/dev/null; then
-    echo "  Port 8081 not accessible"
+  # No container port is published on the host, so check through Traefik on loopback.
+  # -k: the connection is to 127.0.0.1, and the origin cert may be Traefik's default one.
+  echo "  Checking health endpoint through Traefik..."
+  if ! curl -fsSk -o /dev/null --max-time 5 --resolve "$UNI_DOC_SCANNER_BACKEND_SUBDOMAIN:443:127.0.0.1" "https://$UNI_DOC_SCANNER_BACKEND_SUBDOMAIN/api/v1/status"; then
+    echo "  Health endpoint not responding"
     return 1
   fi
 
-  echo "  Port 8081 is accessible"
-  
-  # echo "  Checking health endpoint..."
-  # if ! curl -s -f -o /dev/null http://localhost:8081/api/v1/status; then
-  #   echo "  Health endpoint not responding"
-  #   return 1
-  # fi
-  
+  echo "  Health endpoint is responding"
+
   return 0
 }
 
@@ -106,7 +102,7 @@ while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
   echo "Checking if backend service is running (attempt $ATTEMPT/$MAX_ATTEMPTS)..."
   
   if check_service; then
-    echo "Backend service is now running and available on port 8081!"
+    echo "Backend service is now running and healthy at https://$UNI_DOC_SCANNER_BACKEND_SUBDOMAIN!"
     break
   fi
   
