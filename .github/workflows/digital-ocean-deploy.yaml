@@ -44,6 +44,25 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.DO_SSHKEY }}
 
+      # SSH to the droplet is only reachable over Tailscale; DO_HOST is the
+      # droplet's tailnet IP. The runner joins as an ephemeral tag:ci node.
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TAILSCALE_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TAILSCALE_OAUTH_SECRET }}
+          tags: tag:ci
+
+      - name: Wait for droplet over Tailscale
+        env:
+          HOST: ${{ secrets.DO_HOST }}
+        run: |
+          for i in $(seq 1 12); do
+            timeout 5 bash -c "</dev/tcp/$HOST/22" && exit 0
+            echo "Droplet not reachable yet ($i/12)"; sleep 5
+          done
+          echo "Droplet unreachable over Tailscale"; exit 1
+
       - name: Adding Known Hosts
         run: |
           mkdir -p ~/.ssh
