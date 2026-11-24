@@ -28,7 +28,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/uni-doc-scanner-backend:${{ github.sha }}, ${{ secrets.DOCKERHUB_USERNAME }}/uni-doc-scanner-backend:latest
+          tags: ${{ secrets.DOCKERHUB_HRM_NAMESPACE }}/uni-doc-scanner-backend:${{ github.sha }}, ${{ secrets.DOCKERHUB_HRM_NAMESPACE }}/uni-doc-scanner-backend:latest
 
   deploy:
     name: Deploy to DigitalOcean
@@ -87,5 +87,5 @@ jobs:
 
       - name: Deploy to DigitalOcean using SSHun-doc-scanner-deploy
         run: |
-          ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=no ${{ secrets.DO_USERNAME }}@${{ secrets.DO_HOST }} "chmod +x ~/uni-doc-scanner-deploy.sh && ~/uni-doc-scanner-deploy.sh ${{ secrets.DOCKERHUB_USERNAME }}/uni-doc-scanner-backend:${{ github.sha }}"
+          ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=no ${{ secrets.DO_USERNAME }}@${{ secrets.DO_HOST }} "chmod +x ~/uni-doc-scanner-deploy.sh && ~/uni-doc-scanner-deploy.sh ${{ secrets.DOCKERHUB_HRM_NAMESPACE }}/uni-doc-scanner-backend:${{ github.sha }}"
         # ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=no ${{ secrets.DO_USERNAME }}@${{ secrets.DO_HOST }} "chmod +x ~/prisma-migrate.sh && ~/prisma-migrate.sh"
